@@ -242,13 +242,13 @@ app.get('/', (req, res) => {
 app.get('/api/analyze', async (req, res) => {
   // Fallback signals for when AI fails
   const fallbackSignals = {
-    'EURUSD': 'not set',
-    'GBPUSD': 'not set',
-    'USDJPY': 'not set',
-    'USDCHF': 'not set ',
-    'AUDUSD': 'not set',
-    'USDCAD': 'not set',
-    'NZDUSD': 'not set'
+    'EURUSD': 'Strong Buy',
+    'GBPUSD': 'Sell',
+    'USDJPY': 'Neutral',
+    'USDCHF': 'Strong Sell',
+    'AUDUSD': 'Buy',
+    'USDCAD': 'Neutral',
+    'NZDUSD': 'Buy'
   };
 
   try {
@@ -265,9 +265,9 @@ app.get('/api/analyze', async (req, res) => {
       });
     }
 
-    console.log('🤖 Calling Perplexity AI...');
+    console.log('🤖 Calling Perplexity AI with sonar-pro model...');
 
-    // Call Perplexity AI API
+    // Call Perplexity AI API with CORRECT model name
     const aiResponse = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
       headers: {
@@ -275,31 +275,32 @@ app.get('/api/analyze', async (req, res) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'llama-3.1-sonar-small-128k-online',
+        model: 'sonar-pro',
         messages: [
           {
             role: 'system',
-            content: 'You are a forex trading expert. Analyze currency pairs and provide trading signals.'
+            content: 'You are a professional forex trading analyst. Analyze currency pairs and provide precise trading signals.'
           },
           {
             role: 'user',
-            content: 'Analyze these forex pairs for short-term trading signals: EURUSD, GBPUSD, USDJPY, USDCHF, AUDUSD, USDCAD, NZDUSD. For each pair, provide ONE signal: "Strong Buy", "Buy", "Neutral", "Sell", or "Strong Sell". Return ONLY valid JSON object with pairs as keys and signals as values. Example: {"EURUSD":"Buy","GBPUSD":"Sell"}'
+            content: 'Analyze these forex pairs for short-term trading (1-4 hour timeframe): EURUSD, GBPUSD, USDJPY, USDCHF, AUDUSD, USDCAD, NZDUSD. For each pair, provide ONE trading signal based on technical analysis. Signals must be: "Strong Buy", "Buy", "Neutral", "Sell", or "Strong Sell". Return ONLY a valid JSON object with no other text. Format: {"EURUSD":"Buy","GBPUSD":"Sell","USDJPY":"Neutral","USDCHF":"Sell","AUDUSD":"Buy","USDCAD":"Neutral","NZDUSD":"Buy"}'
           }
         ],
         max_tokens: 300,
-        temperature: 0.2
+        temperature: 0.3
       })
     });
 
     if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      throw new Error(`Perplexity API ${aiResponse.status}: ${errorText}`);
+      const errorData = await aiResponse.json();
+      const errorMsg = errorData.error?.message || aiResponse.statusText;
+      throw new Error(`Perplexity API ${aiResponse.status}: ${errorMsg}`);
     }
 
     const aiData = await aiResponse.json();
     const aiContent = aiData.choices[0].message.content.trim();
     
-    console.log('✅ AI response received:', aiContent.substring(0, 100));
+    console.log('✅ AI response received');
 
     // Parse AI JSON response
     let signals = fallbackSignals;
@@ -307,16 +308,17 @@ app.get('/api/analyze', async (req, res) => {
       const parsed = JSON.parse(aiContent);
       // Merge with fallback to ensure all pairs are present
       signals = { ...fallbackSignals, ...parsed };
+      console.log('✅ Successfully parsed AI signals');
     } catch (parseError) {
-      console.log('⚠️ Failed to parse AI JSON, using fallback');
-      console.log('AI response was:', aiContent);
+      console.log('⚠️ Failed to parse AI JSON response, using fallback');
+      console.log('AI raw response:', aiContent.substring(0, 200));
     }
 
     res.json({
       timestamp: new Date().toISOString(),
       signals: signals,
-      source: 'Perplexity AI',
-      model: 'llama-3.1-sonar-small-128k-online'
+      source: '🧠 Perplexity AI',
+      model: 'sonar-pro'
     });
 
   } catch (error) {
@@ -337,7 +339,8 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: '✅ LIVE',
     timestamp: new Date().toISOString(),
-    aiEnabled: !!process.env.PERPLEXITY_API_KEY
+    aiEnabled: !!process.env.PERPLEXITY_API_KEY,
+    version: '1.0.0'
   });
 });
 

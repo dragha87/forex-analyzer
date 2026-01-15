@@ -1,20 +1,13 @@
 {
   "name": "forex-analyzer",
   "version": "1.0.0",
-  "description": "Forex analyzer using Perplexity API",
-  "main": "api/index.js",
   "scripts": {
     "dev": "node api/index.js",
     "start": "node api/index.js"
   },
-  "engines": {
-    "node": "24.x"
-  },
   "dependencies": {
-    "axios": "^1.7.0",
+    "express": "^4.19.2",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.0",
-    "express": "^4.19.0",
-    "path": "^0.12.7"
+    "axios": "^1.7.2"
   }
 }

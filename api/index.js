@@ -129,14 +129,14 @@ app.get('/', (req, res) => {
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
     }
     
-    .strong-buy {
+    .buy {
       background: linear-gradient(135deg, #4CAF50, #45a049);
       color: white;
     }
     
-    .buy {
-      background: #C8E6C9;
-      color: #2E7D32;
+    .sell {
+      background: linear-gradient(135deg, #D32F2F, #B71C1C);
+      color: white;
     }
     
     .neutral {
@@ -144,13 +144,13 @@ app.get('/', (req, res) => {
       color: #EF6C00;
     }
     
-    .sell {
-      background: #FFCDD2;
-      color: #C62828;
+    .strong-buy {
+      background: linear-gradient(135deg, #4CAF50, #2E7D32);
+      color: white;
     }
     
     .strong-sell {
-      background: linear-gradient(135deg, #D32F2F, #B71C1C);
+      background: linear-gradient(135deg, #D32F2F, #880E4F);
       color: white;
     }
     
@@ -193,14 +193,20 @@ app.get('/', (req, res) => {
         const response = await fetch('/api/analyze');
         const data = await response.json();
         
-        timestampEl.textContent = 'Updated: ' + new Date(data.timestamp).toLocaleString();
-        
-        if (data.source && data.source.includes('Perplexity')) {
-          statusEl.className = 'status ai-active';
-          statusEl.textContent = '✅ Live Perplexity AI Analysis';
-        } else if (data.error) {
+        if (response.status === 500 || data.error) {
           statusEl.className = 'status error';
-          statusEl.textContent = '❌ Error: ' + data.error;
+          statusEl.textContent = '❌ Error: ' + (data.error || 'AI analysis failed');
+          return;
+        }
+        
+        timestampEl.textContent = 'Updated: ' + new Date(data.timestamp).toLocaleString();
+        statusEl.className = 'status ai-active';
+        statusEl.textContent = '✅ Live Perplexity AI Analysis';
+        
+        const signalCount = Object.keys(data.signals || {}).length;
+        if (signalCount === 0) {
+          statusEl.textContent = '⚠️ No signals received from AI';
+          return;
         }
         
         signalsEl.innerHTML = Object.entries(data.signals)
@@ -216,7 +222,7 @@ app.get('/', (req, res) => {
           
       } catch (error) {
         statusEl.className = 'status error';
-        statusEl.textContent = '❌ Network error';
+        statusEl.textContent = '❌ Network error: ' + error.message;
         console.error('Fetch error:', error);
       }
     }
@@ -228,43 +234,11 @@ app.get('/', (req, res) => {
 </html>`);
 });
 
-// 🤖 AI-Powered API Endpoint
+// 🤖 AI-Powered API Endpoint - PURE AI ONLY
 app.get('/api/analyze', async (req, res) => {
-  const fallbackSignals = {
-    'EURUSD': 'AI is not loading',
-'GBPUSD': 'AI is not loading',
-'USDJPY': 'AI is not loading',
-'USDCHF': 'AI is not loading',
-'USDCAD': 'AI is not loading',
-'AUDUSD': 'AI is not loading',
-'NZDUSD': 'AI is not loading',
-'EURGBP': 'AI is not loading',
-'EURCHF': 'AI is not loading',
-'EURJPY': 'AI is not loading',
-'EURAUD': 'AI is not loading',
-'EURCAD': 'AI is not loading',
-'EURNZD': 'AI is not loading',
-'GBPCHF': 'AI is not loading',
-'GBPJPY': 'AI is not loading',
-'GBPAUD': 'AI is not loading',
-'GBPCAD': 'AI is not loading',
-'GBPNZD': 'AI is not loading',
-'CHFJPY': 'AI is not loading',
-'AUDJPY': 'AI is not loading',
-'AUDNZD': 'AI is not loading',
-'AUDCAD': 'AI is not loading',
-'AUDCHF': 'AI is not loading',
-'CADJPY': 'AI is not loading',
-'CADCHF': 'AI is not loading',
-'NZDJPY': 'AI is not loading',
-'NZDCHF': 'AI is not loading',
-'NZDCAD': 'AI is not loading'
-  };
-
   try {
-    console.log('🤖 Calling Perplexity AI with hardcoded key...');
+    console.log('🤖 Calling Perplexity AI...');
 
-    // Real AI call with HARDCODED key
     const aiResponse = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
       headers: {
@@ -276,15 +250,15 @@ app.get('/api/analyze', async (req, res) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a professional forex trading analyst. Provide accurate trading signals.'
+            content: 'You are a professional forex trading analyst. Analyze currency pairs and provide trading signals based on technical analysis, market trends, support/resistance levels, and economic data.'
           },
           {
             role: 'user',
-            content: 'Analyze these forex pairs for short-term trading with what is expected in the next 3-4 days. use technical analysis, news, and an overall analysis based on your research and web research: EURUSD, GBPUSD, USDJPY, USDCHF, USDCAD, AUDUSD, NZDUSD,EURGBP, EURCHF, EURJPY, EURAUD, EURCAD, EURNZD, GBPCHF, GBPJPY, GBPAUD, GBPCAD, GBPNZD, CHFJPY, AUDJPY, AUDNZD, AUDCAD, AUDCHF, CADJPY, CADCHF, NZDJPY, NZDCHF, NZDCAD . For each pair, provide ONE signal: Buy, sell, neutral. Return ONLY valid JSON with no other text like EURUSD - Buy'
+            content: 'Analyze these 29 forex pairs for the next 3-4 days of trading: EURUSD, GBPUSD, USDJPY, USDCHF, USDCAD, AUDUSD, NZDUSD, EURGBP, EURCHF, EURJPY, EURAUD, EURCAD, EURNZD, GBPCHF, GBPJPY, GBPAUD, GBPCAD, GBPNZD, CHFJPY, AUDJPY, AUDNZD, AUDCAD, AUDCHF, CADJPY, CADCHF, NZDJPY, NZDCHF, NZDCAD. For each pair provide ONE signal only: "Buy", "Sell", or "Neutral" based on technical analysis and market conditions. Return ONLY a valid JSON object with no explanation or extra text. Format example: {"EURUSD":"Buy","GBPUSD":"Sell","USDJPY":"Neutral",...}'
           }
         ],
-        max_tokens: 300,
-        temperature: 0.3
+        max_tokens: 800,
+        temperature: 0.2
       })
     });
 
@@ -292,38 +266,63 @@ app.get('/api/analyze', async (req, res) => {
 
     if (!aiResponse.ok) {
       console.error('❌ AI API Error:', aiResponse.status, aiData);
-      throw new Error(`Perplexity ${aiResponse.status}: ${aiData.error?.message || 'API Error'}`);
+      return res.status(500).json({
+        timestamp: new Date().toISOString(),
+        error: `Perplexity ${aiResponse.status}: ${aiData.error?.message || 'API Error'}`,
+        signals: {}
+      });
     }
 
-    const aiContent = aiData.choices[0].message.content.trim();
-    console.log('✅ AI response received');
+    let aiContent = aiData.choices[0].message.content.trim();
+    console.log('✅ AI response received, length:', aiContent.length);
 
-    let signals = fallbackSignals;
+    let signals = {};
+    
+    // Try to parse as JSON
     try {
       signals = JSON.parse(aiContent);
-      signals = { ...fallbackSignals, ...signals };
-      console.log('✅ Successfully parsed AI signals');
-    } catch (e) {
-      console.log('⚠️ JSON parse failed, using fallback');
-      console.log('AI response was:', aiContent);
+      console.log('✅ Successfully parsed AI JSON response');
+    } catch (parseError) {
+      console.log('⚠️ JSON parse failed, trying text extraction from:', aiContent.substring(0, 100));
+      
+      // Extract from text format (PAIR - Signal or PAIR: Signal)
+      const lines = aiContent.split('\n');
+      lines.forEach(line => {
+        const match = line.match(/([A-Z]{6})\s*[-:]\s*(Buy|Sell|Neutral|Strong Buy|Strong Sell)/i);
+        if (match) {
+          const pair = match[1].toUpperCase();
+          const signal = match[2].charAt(0).toUpperCase() + match[2].slice(1).toLowerCase();
+          signals[pair] = signal;
+          console.log(`Extracted: ${pair} = ${signal}`);
+        }
+      });
+      
+      console.log('✅ Text extraction complete, found', Object.keys(signals).length, 'signals');
+    }
+
+    if (Object.keys(signals).length === 0) {
+      console.error('⚠️ No signals extracted from AI response');
+      return res.status(500).json({
+        timestamp: new Date().toISOString(),
+        error: 'Failed to extract signals from AI response',
+        signals: {},
+        rawResponse: aiContent.substring(0, 200)
+      });
     }
 
     res.json({
       timestamp: new Date().toISOString(),
       signals: signals,
       source: '🧠 Perplexity AI (sonar-pro)',
-      status: 'success'
+      pairCount: Object.keys(signals).length
     });
 
   } catch (error) {
-    console.error('❌ AI Error:', error.message);
-
-    res.json({
+    console.error('❌ Critical Error:', error.message);
+    res.status(500).json({
       timestamp: new Date().toISOString(),
-      signals: fallbackSignals,
-      source: 'fallback',
       error: error.message,
-      status: 'error'
+      signals: {}
     });
   }
 });

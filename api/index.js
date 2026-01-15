@@ -231,13 +231,13 @@ app.get('/', (req, res) => {
 // 🤖 AI-Powered API Endpoint
 app.get('/api/analyze', async (req, res) => {
   const fallbackSignals = {
-    'EURUSD': 'Strong Buy',
-    'GBPUSD': 'Sell',
-    'USDJPY': 'Neutral',
-    'USDCHF': 'Strong Sell',
-    'AUDUSD': 'Buy',
-    'USDCAD': 'Neutral',
-    'NZDUSD': 'Buy'
+    'EURUSD': 'Strong Buy test',
+    'GBPUSD': 'Sell test',
+    'USDJPY': 'Neutraltest',
+    'USDCHF': 'Strong Selltest',
+    'AUDUSD': 'Buytest',
+    'USDCAD': 'Neutraltest',
+    'NZDUSD': 'Buytest'
   };
 
   try {

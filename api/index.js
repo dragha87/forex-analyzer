@@ -3,6 +3,9 @@ const app = express();
 
 app.use(express.json());
 
+// HARDCODED API KEY FOR TESTING (⚠️ NEVER PUSH TO PRODUCTION)
+const PERPLEXITY_API_KEY = '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';
+
 // 🎨 Frontend HTML
 app.get('/', (req, res) => {
   res.send(`<!DOCTYPE html>
@@ -92,11 +95,6 @@ app.get('/', (req, res) => {
     .ai-active {
       background: linear-gradient(135deg, #4CAF50, #45a049);
       color: white;
-    }
-    
-    .fallback-warning {
-      background: #FFF3E0;
-      color: #EF6C00;
     }
     
     .error {
@@ -197,19 +195,14 @@ app.get('/', (req, res) => {
         
         timestampEl.textContent = 'Updated: ' + new Date(data.timestamp).toLocaleString();
         
-        // Check if AI is active
         if (data.source && data.source.includes('Perplexity')) {
           statusEl.className = 'status ai-active';
-          statusEl.textContent = '✅ Powered by Perplexity AI';
-        } else if (data.source === 'fallback') {
-          statusEl.className = 'status fallback-warning';
-          statusEl.textContent = '⚠️ Using fallback signals (add PERPLEXITY_API_KEY)';
+          statusEl.textContent = '✅ Live Perplexity AI Analysis';
         } else if (data.error) {
           statusEl.className = 'status error';
           statusEl.textContent = '❌ Error: ' + data.error;
         }
         
-        // Display signals
         signalsEl.innerHTML = Object.entries(data.signals)
           .map(([pair, signal]) => {
             const signalClass = signal.toLowerCase().replace(/\\s+/g, '-');
@@ -223,15 +216,12 @@ app.get('/', (req, res) => {
           
       } catch (error) {
         statusEl.className = 'status error';
-        statusEl.textContent = '❌ Network error - check console';
+        statusEl.textContent = '❌ Network error';
         console.error('Fetch error:', error);
       }
     }
     
-    // Auto-load on page load
     window.addEventListener('load', fetchSignals);
-    
-    // Refresh every 5 minutes (300000ms)
     setInterval(fetchSignals, 300000);
   </script>
 </body>
@@ -240,7 +230,6 @@ app.get('/', (req, res) => {
 
 // 🤖 AI-Powered API Endpoint
 app.get('/api/analyze', async (req, res) => {
-  // Fallback signals for when AI fails
   const fallbackSignals = {
     'EURUSD': 'Strong Buy',
     'GBPUSD': 'Sell',
@@ -252,26 +241,13 @@ app.get('/api/analyze', async (req, res) => {
   };
 
   try {
-    const apiKey = process.env.PERPLEXITY_API_KEY;
-    
-    // If no API key, return fallback
-    if (!apiKey) {
-      console.log('⚠️ PERPLEXITY_API_KEY not set - using fallback signals');
-      return res.json({
-        timestamp: new Date().toISOString(),
-        signals: fallbackSignals,
-        source: 'fallback',
-        note: 'Add PERPLEXITY_API_KEY to Vercel environment variables to enable AI'
-      });
-    }
+    console.log('🤖 Calling Perplexity AI with hardcoded key...');
 
-    console.log('🤖 Calling Perplexity AI with sonar-pro model...');
-
-    // Call Perplexity AI API with CORRECT model name
+    // Real AI call with HARDCODED key
     const aiResponse = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
+        'Authorization': `Bearer ${PERPLEXITY_API_KEY}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
@@ -279,11 +255,11 @@ app.get('/api/analyze', async (req, res) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a professional forex trading analyst. Analyze currency pairs and provide precise trading signals.'
+            content: 'You are a professional forex trading analyst. Provide accurate trading signals.'
           },
           {
             role: 'user',
-            content: 'Analyze these forex pairs for short-term trading (1-4 hour timeframe): EURUSD, GBPUSD, USDJPY, USDCHF, AUDUSD, USDCAD, NZDUSD. For each pair, provide ONE trading signal based on technical analysis. Signals must be: "Strong Buy", "Buy", "Neutral", "Sell", or "Strong Sell". Return ONLY a valid JSON object with no other text. Format: {"EURUSD":"Buy","GBPUSD":"Sell","USDJPY":"Neutral","USDCHF":"Sell","AUDUSD":"Buy","USDCAD":"Neutral","NZDUSD":"Buy"}'
+            content: 'Analyze these forex pairs for short-term trading: EURUSD, GBPUSD, USDJPY, USDCHF, AUDUSD, USDCAD, NZDUSD. For each pair, provide ONE signal: "Strong Buy", "Buy", "Neutral", "Sell", or "Strong Sell". Return ONLY valid JSON with no other text: {"EURUSD":"Buy","GBPUSD":"Sell","USDJPY":"Neutral","USDCHF":"Sell","AUDUSD":"Buy","USDCAD":"Neutral","NZDUSD":"Buy"}'
           }
         ],
         max_tokens: 300,
@@ -291,56 +267,53 @@ app.get('/api/analyze', async (req, res) => {
       })
     });
 
+    const aiData = await aiResponse.json();
+
     if (!aiResponse.ok) {
-      const errorData = await aiResponse.json();
-      const errorMsg = errorData.error?.message || aiResponse.statusText;
-      throw new Error(`Perplexity API ${aiResponse.status}: ${errorMsg}`);
+      console.error('❌ AI API Error:', aiResponse.status, aiData);
+      throw new Error(`Perplexity ${aiResponse.status}: ${aiData.error?.message || 'API Error'}`);
     }
 
-    const aiData = await aiResponse.json();
     const aiContent = aiData.choices[0].message.content.trim();
-    
     console.log('✅ AI response received');
 
-    // Parse AI JSON response
     let signals = fallbackSignals;
     try {
-      const parsed = JSON.parse(aiContent);
-      // Merge with fallback to ensure all pairs are present
-      signals = { ...fallbackSignals, ...parsed };
+      signals = JSON.parse(aiContent);
+      signals = { ...fallbackSignals, ...signals };
       console.log('✅ Successfully parsed AI signals');
-    } catch (parseError) {
-      console.log('⚠️ Failed to parse AI JSON response, using fallback');
-      console.log('AI raw response:', aiContent.substring(0, 200));
+    } catch (e) {
+      console.log('⚠️ JSON parse failed, using fallback');
+      console.log('AI response was:', aiContent);
     }
 
     res.json({
       timestamp: new Date().toISOString(),
       signals: signals,
-      source: '🧠 Perplexity AI',
-      model: 'sonar-pro'
+      source: '🧠 Perplexity AI (sonar-pro)',
+      status: 'success'
     });
 
   } catch (error) {
     console.error('❌ AI Error:', error.message);
-    
+
     res.json({
       timestamp: new Date().toISOString(),
       signals: fallbackSignals,
       source: 'fallback',
       error: error.message,
-      note: 'AI analysis failed, showing fallback signals'
+      status: 'error'
     });
   }
 });
 
-// Health check endpoint
+// Health check
 app.get('/api/health', (req, res) => {
   res.json({
     status: '✅ LIVE',
     timestamp: new Date().toISOString(),
-    aiEnabled: !!process.env.PERPLEXITY_API_KEY,
-    version: '1.0.0'
+    apiKeyActive: !!PERPLEXITY_API_KEY,
+    keyPreview: PERPLEXITY_API_KEY.substring(0, 10) + '...'
   });
 });
 

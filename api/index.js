@@ -124,58 +124,49 @@ app.get('/', (req, res) => {
     
     .signals-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 15px;
     }
     
     .signal {
-      padding: 16px;
-      border-radius: 12px;
-      font-weight: 500;
       text-align: center;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      transition: all 0.2s;
+      padding: 12px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      border: 1px solid #eee;
     }
     
-    .signal:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    .pair-name {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    
+    .pair-signal {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
     }
     
     .buy {
-      background: linear-gradient(135deg, #4CAF50, #45a049);
-      color: white;
+      color: #4CAF50;
     }
     
     .sell {
-      background: linear-gradient(135deg, #D32F2F, #B71C1C);
-      color: white;
+      color: #D32F2F;
     }
     
     .neutral {
-      background: #FFF3E0;
       color: #EF6C00;
     }
     
     .strong-buy {
-      background: linear-gradient(135deg, #4CAF50, #2E7D32);
-      color: white;
+      color: #2E7D32;
     }
     
     .strong-sell {
-      background: linear-gradient(135deg, #D32F2F, #880E4F);
-      color: white;
-    }
-    
-    .pair-name {
-      font-size: 0.9em;
-      opacity: 0.8;
-      margin-bottom: 4px;
-    }
-    
-    .pair-signal {
-      font-size: 1.1em;
-      font-weight: 600;
+      color: #880E4F;
     }
     
     .ai-analysis {
@@ -188,6 +179,7 @@ app.get('/', (req, res) => {
       font-size: 0.95em;
       max-height: 600px;
       overflow-y: auto;
+      margin-bottom: 40px;
     }
     
     .ai-analysis h3 {
@@ -217,6 +209,63 @@ app.get('/', (req, res) => {
     .ai-analysis::-webkit-scrollbar-thumb:hover {
       background: #764ba2;
     }
+    
+    .signals-export {
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+    }
+    
+    .signals-export h3 {
+      color: #667eea;
+      font-size: 1.2em;
+      margin-bottom: 12px;
+    }
+    
+    .signals-export-text {
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      padding: 12px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      color: #333;
+      word-break: break-all;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-bottom: 12px;
+    }
+    
+    .signals-export-text::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .signals-export-text::-webkit-scrollbar-track {
+      background: #f0f0f0;
+    }
+    
+    .signals-export-text::-webkit-scrollbar-thumb {
+      background: #ccc;
+      border-radius: 3px;
+    }
+    
+    .copy-btn {
+      padding: 8px 16px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    
+    .copy-btn:hover {
+      background: #764ba2;
+    }
   </style>
 </head>
 <body>
@@ -242,19 +291,30 @@ app.get('/', (req, res) => {
         <p>AI analysis will appear here after signals are loaded...</p>
       </div>
     </div>
+    
+    <!-- Signals Export Section -->
+    <div class="signals-export">
+      <h3>📋 Comma-Separated Signals</h3>
+      <div class="signals-export-text" id="signalsExport">EURUSD-Buy, GBPUSD-Sell, USDJPY-Neutral...</div>
+      <button class="copy-btn" onclick="copyToClipboard()">📋 Copy to Clipboard</button>
+    </div>
   </div>
 
   <script>
+    let currentSignals = {};
+    
     async function fetchSignals() {
       const statusEl = document.getElementById('status');
       const signalsEl = document.getElementById('signals');
       const aiAnalysisEl = document.getElementById('aiAnalysis');
+      const signalsExportEl = document.getElementById('signalsExport');
       const timestampEl = document.getElementById('timestamp');
       
       statusEl.className = 'status loading';
       statusEl.textContent = '🧠 Analyzing markets with AI...';
       signalsEl.innerHTML = '';
       aiAnalysisEl.innerHTML = '<p>Loading...</p>';
+      signalsExportEl.innerHTML = 'Loading...';
       timestampEl.textContent = '';
       
       try {
@@ -278,14 +338,17 @@ app.get('/', (req, res) => {
           return;
         }
         
-        // Display signals
+        // Store signals for export
+        currentSignals = data.signals;
+        
+        // Display signals as simple text
         signalsEl.innerHTML = Object.entries(data.signals)
           .map(([pair, signal]) => {
             const signalClass = signal.toLowerCase().replace(/\\s+/g, '-');
             return \`
-              <div class="signal \${signalClass}">
+              <div class="signal">
                 <div class="pair-name">\${pair}</div>
-                <div class="pair-signal">\${signal}</div>
+                <div class="pair-signal \${signalClass}">\${signal}</div>
               </div>
             \`;
           }).join('');
@@ -298,12 +361,30 @@ app.get('/', (req, res) => {
         } else {
           aiAnalysisEl.innerHTML = '<p>No detailed analysis available</p>';
         }
+        
+        // Generate comma-separated export
+        const exportText = Object.entries(data.signals)
+          .map(([pair, signal]) => \`\${pair}-\${signal}\`)
+          .join(', ');
+        signalsExportEl.textContent = exportText;
           
       } catch (error) {
         statusEl.className = 'status error';
         statusEl.textContent = '❌ Network error: ' + error.message;
         console.error('Fetch error:', error);
       }
+    }
+    
+    function copyToClipboard() {
+      const exportEl = document.getElementById('signalsExport');
+      const text = exportEl.textContent;
+      
+      navigator.clipboard.writeText(text).then(() => {
+        alert('✅ Signals copied to clipboard!');
+      }).catch(err => {
+        console.error('Failed to copy:', err);
+        alert('❌ Failed to copy to clipboard');
+      });
     }
     
     window.addEventListener('load', fetchSignals);
@@ -333,7 +414,7 @@ app.get('/api/analyze', async (req, res) => {
           },
           {
             role: 'user',
-            content: 'Analyze what is expected for these 29 forex pairs for the next 3-4 days of trading. Use technical and holistic analysis and new. use internet resources for this. focus on where the trend will go in next 3-4 days. use also support and resistence. so compare current position vs what would be expected to get in next 3-4 days: EURUSD, GBPUSD, USDJPY, USDCHF, USDCAD, AUDUSD, NZDUSD, EURGBP, EURCHF, EURJPY, EURAUD, EURCAD, EURNZD, GBPCHF, GBPJPY, GBPAUD, GBPCAD, GBPNZD, CHFJPY, AUDJPY, AUDNZD, AUDCAD, AUDCHF, CADJPY, CADCHF, NZDJPY, NZDCHF, NZDCAD. First, provide a JSON object with trading signals. Then provide a detailed market analysis explaining your signals. For signals, use: "Buy", "Sell", or "Neutral" based on technical analysis. Format: Start with JSON like {"EURUSD":"Buy",...} then add detailed market analysis below.'
+            content: 'Analyze what is expected for these 29 forex pairs for the next 3-4 days of trading. Use technical and holistic analysis and news. Use internet resources for this. Focus on where the trend will go in next 3-4 days. Use support and resistance. Compare current position vs what would be expected to get in next 3-4 days: EURUSD, GBPUSD, USDJPY, USDCHF, USDCAD, AUDUSD, NZDUSD, EURGBP, EURCHF, EURJPY, EURAUD, EURCAD, EURNZD, GBPCHF, GBPJPY, GBPAUD, GBPCAD, GBPNZD, CHFJPY, AUDJPY, AUDNZD, AUDCAD, AUDCHF, CADJPY, CADCHF, NZDJPY, NZDCHF, NZDCAD. First, provide a JSON object with trading signals. Then provide a detailed market analysis explaining your signals. For signals, use: "Buy", "Sell", or "Neutral" based on technical analysis. Format: Start with JSON like {"EURUSD":"Buy",...} then add detailed market analysis below.'
           }
         ],
         max_tokens: 1500,

@@ -252,7 +252,7 @@ app.get('/api/analyze', async (req, res) => {
   };
 
   try {
-    const apiKey = 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;
+    const apiKey = process.env.PERPLEXITY_API_KEY;
     
     // If no API key, return fallback
     if (!apiKey) {

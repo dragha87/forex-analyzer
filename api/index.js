@@ -242,13 +242,13 @@ app.get('/', (req, res) => {
 app.get('/api/analyze', async (req, res) => {
   // Fallback signals for when AI fails
   const fallbackSignals = {
-    'EURUSD': 'Strong Buy',
-    'GBPUSD': 'Sell',
-    'USDJPY': 'Neutral',
-    'USDCHF': 'Strong Sell',
-    'AUDUSD': 'Buy',
-    'USDCAD': 'Neutral',
-    'NZDUSD': 'Buy'
+    'EURUSD': 'not set',
+    'GBPUSD': 'not set',
+    'USDJPY': 'not set',
+    'USDCHF': 'not set ',
+    'AUDUSD': 'not set',
+    'USDCAD': 'not set',
+    'NZDUSD': 'not set'
   };
 
   try {

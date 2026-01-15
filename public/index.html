@@ -1,434 +1,72 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forex Major & Minor Pairs - AI Analysis</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .header {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        .header h1 {
-            color: #333;
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            color: #666;
-            font-size: 1.1em;
-        }
-
-        .info-box {
-            background: #f0f4ff;
-            border-left: 4px solid #667eea;
-            padding: 15px;
-            margin-top: 15px;
-            border-radius: 5px;
-            font-size: 0.95em;
-            color: #555;
-        }
-
-        .refresh-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 20px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .last-update {
-            color: #666;
-            font-size: 0.95em;
-        }
-
-        .refresh-btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.95em;
-            transition: background 0.3s;
-        }
-
-        .refresh-btn:hover {
-            background: #5568d3;
-        }
-
-        .refresh-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: white;
-        }
-
-        .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid white;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .section {
-            margin-bottom: 30px;
-        }
-
-        .section-title {
-            background: white;
-            padding: 20px;
-            border-radius: 10px 10px 0 0;
-            color: #333;
-            font-size: 1.5em;
-            font-weight: bold;
-            border-bottom: 2px solid #667eea;
-        }
-
-        .pairs-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 15px;
-            padding: 20px;
-            background: white;
-            border-radius: 0 0 10px 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .pair-card {
-            background: #f9f9f9;
-            border-left: 5px solid #667eea;
-            padding: 15px;
-            border-radius: 5px;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .pair-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .pair-name {
-            font-weight: bold;
-            font-size: 1.2em;
-            color: #333;
-            margin-bottom: 8px;
-        }
-
-        .pair-signal {
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 1.1em;
-        }
-
-        .strong-buy {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .strong-sell {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .medium-buy {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-
-        .medium-sell {
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeaa7;
-        }
-
-        .flat {
-            background: #e2e3e5;
-            color: #383d41;
-            border: 1px solid #d6d8db;
-        }
-
-        .error {
-            background: #fff3cd;
-            border: 1px solid #ffc107;
-            color: #856404;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 20px 0;
-        }
-
-        .legend {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .legend h3 {
-            margin-bottom: 15px;
-            color: #333;
-        }
-
-        .legend-items {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
-        }
-
-        .legend-item {
-            padding: 8px;
-            border-radius: 5px;
-            font-size: 0.9em;
-            text-align: center;
-            font-weight: bold;
-        }
-
-        .footer {
-            text-align: center;
-            color: white;
-            margin-top: 40px;
-            font-size: 0.9em;
-        }
-
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 1.8em;
-            }
-
-            .pairs-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .refresh-info {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-        }
-    </style>
+  <title>Forex Analyzer</title>
+  <style>
+    body { font-family: Arial; max-width: 800px; margin: 50px auto; padding: 20px; }
+    .signal { padding: 10px; margin: 5px 0; border-radius: 5px; }
+    .strong-buy { background: #4CAF50; color: white; }
+    .buy { background: #8BC34A; }
+    .neutral { background: #FF9800; color: white; }
+    .sell { background: #F44336; color: white; }
+    .strong-sell { background: #D32F2F; color: white; }
+    button { padding: 10px 20px; font-size: 16px; margin: 10px; }
+    .loading { text-align: center; font-style: italic; }
+    .error { background: #f44336; color: white; padding: 10px; border-radius: 5px; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🚀 Forex Major & Minor Pairs Analysis</h1>
-            <p>AI-Powered Market Trend Analysis (24-48 Hour Outlook)</p>
-            <div class="info-box">
-                Real-time analysis powered by Perplexity AI. Includes technical analysis, news sentiment, and holistic market conditions.
-            </div>
-            <div class="refresh-info">
-                <div class="last-update">
-                    Last Update: <span id="lastUpdate">Loading...</span>
-                </div>
-                <button class="refresh-btn" id="refreshBtn" onclick="manualRefresh()">🔄 Refresh Now</button>
-                <div>Auto-refresh: Every 60 minutes</div>
-            </div>
-        </div>
+  <h1>🚀 Forex Analyzer</h1>
+  <button onclick="analyze()">Get Analysis</button>
+  <button onclick="checkHealth()">Check API</button>
+  
+  <div id="status"></div>
+  <div id="signals"></div>
 
-        <div class="legend">
-            <h3>Signal Legend</h3>
-            <div class="legend-items">
-                <div class="legend-item strong-buy">Strong Buy</div>
-                <div class="legend-item medium-buy">Medium Buy</div>
-                <div class="legend-item flat">Flat</div>
-                <div class="legend-item medium-sell">Medium Sell</div>
-                <div class="legend-item strong-sell">Strong Sell</div>
-            </div>
-        </div>
+  <script>
+    const API_BASE = '/api';
 
-        <div id="errorContainer"></div>
+    async function checkHealth() {
+      try {
+        const res = await fetch(`${API_BASE}/health`);
+        const data = await res.json();
+        document.getElementById('status').innerHTML = 
+          `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+      } catch (e) {
+        document.getElementById('status').innerHTML = 
+          `<div class="error">Health check failed: ${e.message}</div>`;
+      }
+    }
 
-        <div id="loading" class="loading">
-            <div class="spinner"></div>
-            <p>Analyzing market conditions with AI...</p>
-        </div>
+    async function analyze() {
+      const statusEl = document.getElementById('status');
+      const signalsEl = document.getElementById('signals');
+      
+      statusEl.innerHTML = '<div class="loading">Analyzing...</div>';
+      signalsEl.innerHTML = '';
 
-        <div id="content" style="display: none;">
-            <!-- Major Pairs Section -->
-            <div class="section">
-                <div class="section-title">📊 Major Pairs (7)</div>
-                <div class="pairs-grid" id="majorPairsGrid"></div>
-            </div>
-
-            <!-- Minor Pairs Section -->
-            <div class="section">
-                <div class="section-title">📈 Minor Pairs (20+)</div>
-                <div class="pairs-grid" id="minorPairsGrid"></div>
-            </div>
-        </div>
-
-        <div class="footer">
-            <p>Data refreshes automatically every hour | Powered by Perplexity AI | Last analysis: <span id="footerTime">Fetching...</span></p>
-        </div>
-    </div>
-
-    <script>
-        const API_ENDPOINT = '/api/analyze';
-        let autoRefreshInterval = null;
-
-        async function loadAnalysis() {
-            try {
-                document.getElementById('loading').style.display = 'block';
-                document.getElementById('content').style.display = 'none';
-                document.getElementById('errorContainer').innerHTML = '';
-
-                const response = await fetch(API_ENDPOINT);
-                
-                if (!response.ok) {
-                    throw new Error(`Server error: ${response.statusText}`);
-                }
-
-                const data = await response.json();
-
-                if (data.error) {
-                    showError(data.error);
-                    return;
-                }
-
-                displayAnalysis(data);
-                updateTimestamp();
-                setupAutoRefresh();
-            } catch (error) {
-                console.error('Error loading analysis:', error);
-                showError(`Failed to load analysis: ${error.message}`);
-            }
+      try {
+        const res = await fetch(`${API_BASE}/analyze`);
+        const data = await res.json();
+        
+        if (data.error) {
+          statusEl.innerHTML = `<div class="error">${data.error}</div>`;
+          return;
         }
 
-        function displayAnalysis(data) {
-            const majorPairsGrid = document.getElementById('majorPairsGrid');
-            const minorPairsGrid = document.getElementById('minorPairsGrid');
-
-            majorPairsGrid.innerHTML = '';
-            minorPairsGrid.innerHTML = '';
-
-            const majorPairs = [
-                'EURUSD', 'USDJPY', 'GBPUSD', 'USDCHF', 
-                'AUDUSD', 'USDCAD', 'NZDUSD'
-            ];
-
-            for (const pair of majorPairs) {
-                const signal = data[pair] || 'N/A';
-                majorPairsGrid.innerHTML += createPairCard(pair, signal);
-            }
-
-            for (const [pair, signal] of Object.entries(data)) {
-                if (!majorPairs.includes(pair)) {
-                    minorPairsGrid.innerHTML += createPairCard(pair, signal);
-                }
-            }
-
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('content').style.display = 'block';
-        }
-
-        function createPairCard(pair, signal) {
-            const signalClass = getSignalClass(signal);
-            return `
-                <div class="pair-card">
-                    <div class="pair-name">${pair}</div>
-                    <div class="pair-signal ${signalClass}">${signal}</div>
-                </div>
-            `;
-        }
-
-        function getSignalClass(signal) {
-            const lowerSignal = signal.toLowerCase();
-            if (lowerSignal.includes('strong buy')) return 'strong-buy';
-            if (lowerSignal.includes('strong sell')) return 'strong-sell';
-            if (lowerSignal.includes('medium buy')) return 'medium-buy';
-            if (lowerSignal.includes('medium sell')) return 'medium-sell';
-            return 'flat';
-        }
-
-        function updateTimestamp() {
-            const now = new Date();
-            const timeString = now.toLocaleString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            });
-
-            document.getElementById('lastUpdate').textContent = timeString;
-            document.getElementById('footerTime').textContent = timeString;
-        }
-
-        function showError(message) {
-            const errorContainer = document.getElementById('errorContainer');
-            errorContainer.innerHTML = `
-                <div class="error">
-                    <strong>⚠️ Error:</strong> ${message}
-                </div>
-            `;
-            document.getElementById('loading').style.display = 'none';
-        }
-
-        function setupAutoRefresh() {
-            if (autoRefreshInterval) {
-                clearInterval(autoRefreshInterval);
-            }
-
-            autoRefreshInterval = setInterval(() => {
-                console.log('Auto-refreshing analysis...');
-                loadAnalysis();
-            }, 60 * 60 * 1000);
-        }
-
-        function manualRefresh() {
-            const btn = document.getElementById('refreshBtn');
-            btn.disabled = true;
-            btn.textContent = '⏳ Refreshing...';
-
-            loadAnalysis().finally(() => {
-                btn.disabled = false;
-                btn.textContent = '🔄 Refresh Now';
-            });
-        }
-
-        window.addEventListener('DOMContentLoaded', loadAnalysis);
-    </script>
+        statusEl.innerHTML = `<div>Updated: ${data.timestamp}</div>`;
+        
+        signalsEl.innerHTML = Object.entries(data.signals)
+          .map(([pair, signal]) => 
+            `<div class="signal ${signal.toLowerCase().replace(' ', '-')}">
+              ${pair}: ${signal}
+            </div>`
+          ).join('');
+          
+      } catch (e) {
+        statusEl.innerHTML = `<div class="error">Failed: ${e.message}</div>`;
+      }
+    }
+  </script>
 </body>
 </html>

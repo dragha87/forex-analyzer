@@ -4,7 +4,7 @@ const app = express();
 app.use(express.json());
 
 // HARDCODED API KEY FOR TESTING (⚠️ NEVER PUSH TO PRODUCTION)
-const PERPLEXITY_API_KEY = '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';
+const PERPLEXITY_API_KEY = 'pplx-1sIz0ue76rHVM9N3pef5lYx2pQdfOqFp48hfvFi6ZntDMLi';
 
 // 🎨 Frontend HTML
 app.get('/', (req, res) => {

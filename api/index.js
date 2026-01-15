@@ -232,12 +232,33 @@ app.get('/', (req, res) => {
 app.get('/api/analyze', async (req, res) => {
   const fallbackSignals = {
     'EURUSD': 'AI is not loading',
-    'GBPUSD': 'AI is not loading',
-    'USDJPY': 'AI is not loading',
-    'USDCHF': 'AI is not loading',
-    'AUDUSD': 'AI is not loading',
-    'USDCAD': 'AI is not loading',
-    'NZDUSD': 'AI is not loading'
+'GBPUSD': 'AI is not loading',
+'USDJPY': 'AI is not loading',
+'USDCHF': 'AI is not loading',
+'USDCAD': 'AI is not loading',
+'AUDUSD': 'AI is not loading',
+'NZDUSD': 'AI is not loading',
+'EURGBP': 'AI is not loading',
+'EURCHF': 'AI is not loading',
+'EURJPY': 'AI is not loading',
+'EURAUD': 'AI is not loading',
+'EURCAD': 'AI is not loading',
+'EURNZD': 'AI is not loading',
+'GBPCHF': 'AI is not loading',
+'GBPJPY': 'AI is not loading',
+'GBPAUD': 'AI is not loading',
+'GBPCAD': 'AI is not loading',
+'GBPNZD': 'AI is not loading',
+'CHFJPY': 'AI is not loading',
+'AUDJPY': 'AI is not loading',
+'AUDNZD': 'AI is not loading',
+'AUDCAD': 'AI is not loading',
+'AUDCHF': 'AI is not loading',
+'CADJPY': 'AI is not loading',
+'CADCHF': 'AI is not loading',
+'NZDJPY': 'AI is not loading',
+'NZDCHF': 'AI is not loading',
+'NZDCAD': 'AI is not loading'
   };
 
   try {
@@ -259,7 +280,7 @@ app.get('/api/analyze', async (req, res) => {
           },
           {
             role: 'user',
-            content: 'Analyze these forex pairs for short-term trading: EURUSD, GBPUSD, USDJPY, USDCHF, AUDUSD, USDCAD, NZDUSD. For each pair, provide ONE signal: "Strong Buy", "Buy", "Neutral", "Sell", or "Strong Sell". Return ONLY valid JSON with no other text: {"EURUSD":"Buy","GBPUSD":"Sell","USDJPY":"Neutral","USDCHF":"Sell","AUDUSD":"Buy","USDCAD":"Neutral","NZDUSD":"Buy"}'
+            content: 'Analyze these forex pairs for short-term trading with what is expected in the next 3-4 days. use technical analysis, news, and an overall analysis based on your research and web research: EURUSD, GBPUSD, USDJPY, USDCHF, USDCAD, AUDUSD, NZDUSD,EURGBP, EURCHF, EURJPY, EURAUD, EURCAD, EURNZD, GBPCHF, GBPJPY, GBPAUD, GBPCAD, GBPNZD, CHFJPY, AUDJPY, AUDNZD, AUDCAD, AUDCHF, CADJPY, CADCHF, NZDJPY, NZDCHF, NZDCAD . For each pair, provide ONE signal: Buy, sell, neutral. Return ONLY valid JSON with no other text like EURUSD - Buy'
           }
         ],
         max_tokens: 300,

@@ -30,7 +30,7 @@ app.get('/', (req, res) => {
     }
     
     .container {
-      max-width: 1200px;
+      max-width: 900px;
       margin: 0 auto;
       background: white;
       border-radius: 20px;
@@ -55,7 +55,7 @@ app.get('/', (req, res) => {
       font-size: 1.1em;
     }
     
-    .main-button {
+    button {
       width: 100%;
       padding: 16px;
       font-size: 18px;
@@ -69,12 +69,12 @@ app.get('/', (req, res) => {
       margin-bottom: 20px;
     }
     
-    .main-button:hover {
+    button:hover {
       transform: translateY(-2px);
       box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
     }
     
-    .main-button:active {
+    button:active {
       transform: translateY(0);
     }
     
@@ -124,42 +124,22 @@ app.get('/', (req, res) => {
     
     .signals-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-      gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
     }
     
-    .signal-item {
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    
-    .signal-button {
-      width: 60px;
-      height: 30px;
-      font-size: 10px;
-      font-weight: 600;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: all 0.2s;
-      margin-bottom: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .signal-button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-    
-    .signal-text {
-      font-size: 11px;
+    .signal {
+      padding: 16px;
+      border-radius: 12px;
       font-weight: 500;
-      color: #333;
-      word-break: break-word;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s;
+    }
+    
+    .signal:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
     }
     
     .buy {
@@ -187,6 +167,17 @@ app.get('/', (req, res) => {
       color: white;
     }
     
+    .pair-name {
+      font-size: 0.9em;
+      opacity: 0.8;
+      margin-bottom: 4px;
+    }
+    
+    .pair-signal {
+      font-size: 1.1em;
+      font-weight: 600;
+    }
+    
     .ai-analysis {
       background: #f5f5f5;
       border-left: 4px solid #667eea;
@@ -197,7 +188,6 @@ app.get('/', (req, res) => {
       font-size: 0.95em;
       max-height: 600px;
       overflow-y: auto;
-      margin-bottom: 30px;
     }
     
     .ai-analysis h3 {
@@ -227,64 +217,6 @@ app.get('/', (req, res) => {
     .ai-analysis::-webkit-scrollbar-thumb:hover {
       background: #764ba2;
     }
-    
-    .signals-export {
-      background: #f9f9f9;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 30px;
-    }
-    
-    .signals-export h3 {
-      color: #667eea;
-      font-size: 1.2em;
-      margin-bottom: 12px;
-    }
-    
-    .signals-export-text {
-      background: white;
-      border: 1px solid #e0e0e0;
-      border-radius: 6px;
-      padding: 12px;
-      font-family: 'Courier New', monospace;
-      font-size: 12px;
-      line-height: 1.6;
-      color: #333;
-      word-break: break-all;
-      max-height: 300px;
-      overflow-y: auto;
-    }
-    
-    .signals-export-text::-webkit-scrollbar {
-      width: 6px;
-    }
-    
-    .signals-export-text::-webkit-scrollbar-track {
-      background: #f0f0f0;
-    }
-    
-    .signals-export-text::-webkit-scrollbar-thumb {
-      background: #ccc;
-      border-radius: 3px;
-    }
-    
-    .copy-btn {
-      margin-top: 12px;
-      padding: 8px 16px;
-      background: #667eea;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 12px;
-      font-weight: 600;
-      transition: all 0.2s;
-    }
-    
-    .copy-btn:hover {
-      background: #764ba2;
-    }
   </style>
 </head>
 <body>
@@ -292,7 +224,7 @@ app.get('/', (req, res) => {
     <h1>📈 AI Forex Signals</h1>
     <p class="subtitle">Real-time trading signals powered by Perplexity AI</p>
     
-    <button class="main-button" onclick="fetchSignals()">🔄 Get Fresh AI Analysis</button>
+    <button onclick="fetchSignals()">🔄 Get Fresh AI Analysis</button>
     
     <div id="status" class="status loading">⏳ Loading AI analysis...</div>
     <div class="timestamp" id="timestamp"></div>
@@ -310,30 +242,19 @@ app.get('/', (req, res) => {
         <p>AI analysis will appear here after signals are loaded...</p>
       </div>
     </div>
-    
-    <!-- Signals Export Section -->
-    <div class="signals-export">
-      <h3>📋 Comma-Separated Signals</h3>
-      <div class="signals-export-text" id="signalsExport">EURUSD-Buy, GBPUSD-Sell, USDJPY-Neutral...</div>
-      <button class="copy-btn" onclick="copyToClipboard()">📋 Copy to Clipboard</button>
-    </div>
   </div>
 
   <script>
-    let currentSignals = {};
-    
     async function fetchSignals() {
       const statusEl = document.getElementById('status');
       const signalsEl = document.getElementById('signals');
       const aiAnalysisEl = document.getElementById('aiAnalysis');
-      const signalsExportEl = document.getElementById('signalsExport');
       const timestampEl = document.getElementById('timestamp');
       
       statusEl.className = 'status loading';
       statusEl.textContent = '🧠 Analyzing markets with AI...';
       signalsEl.innerHTML = '';
       aiAnalysisEl.innerHTML = '<p>Loading...</p>';
-      signalsExportEl.innerHTML = 'Loading...';
       timestampEl.textContent = '';
       
       try {
@@ -357,17 +278,14 @@ app.get('/', (req, res) => {
           return;
         }
         
-        // Store signals for export
-        currentSignals = data.signals;
-        
-        // Display signals with small buttons
+        // Display signals
         signalsEl.innerHTML = Object.entries(data.signals)
           .map(([pair, signal]) => {
             const signalClass = signal.toLowerCase().replace(/\\s+/g, '-');
             return \`
-              <div class="signal-item">
-                <button class="signal-button \${signalClass}" disabled>\${signal}</button>
-                <div class="signal-text">\${pair}</div>
+              <div class="signal \${signalClass}">
+                <div class="pair-name">\${pair}</div>
+                <div class="pair-signal">\${signal}</div>
               </div>
             \`;
           }).join('');
@@ -380,30 +298,12 @@ app.get('/', (req, res) => {
         } else {
           aiAnalysisEl.innerHTML = '<p>No detailed analysis available</p>';
         }
-        
-        // Generate comma-separated export
-        const exportText = Object.entries(data.signals)
-          .map(([pair, signal]) => \`\${pair}-\${signal}\`)
-          .join(', ');
-        signalsExportEl.textContent = exportText;
           
       } catch (error) {
         statusEl.className = 'status error';
         statusEl.textContent = '❌ Network error: ' + error.message;
         console.error('Fetch error:', error);
       }
-    }
-    
-    function copyToClipboard() {
-      const exportEl = document.getElementById('signalsExport');
-      const text = exportEl.textContent;
-      
-      navigator.clipboard.writeText(text).then(() => {
-        alert('✅ Signals copied to clipboard!');
-      }).catch(err => {
-        console.error('Failed to copy:', err);
-        alert('❌ Failed to copy to clipboard');
-      });
     }
     
     window.addEventListener('load', fetchSignals);
@@ -433,7 +333,7 @@ app.get('/api/analyze', async (req, res) => {
           },
           {
             role: 'user',
-            content: 'Analyze these 29 forex pairs for the next 3-4 days of trading: EURUSD, GBPUSD, USDJPY, USDCHF, USDCAD, AUDUSD, NZDUSD, EURGBP, EURCHF, EURJPY, EURAUD, EURCAD, EURNZD, GBPCHF, GBPJPY, GBPAUD, GBPCAD, GBPNZD, CHFJPY, AUDJPY, AUDNZD, AUDCAD, AUDCHF, CADJPY, CADCHF, NZDJPY, NZDCHF, NZDCAD. First, provide a JSON object with trading signals. Then provide a detailed market analysis explaining your signals. For signals, use: "Buy", "Sell", or "Neutral" based on technical analysis. Format: Start with JSON like {"EURUSD":"Buy",...} then add detailed market analysis below.'
+            content: 'Analyze what is expected for these 29 forex pairs for the next 3-4 days of trading. Use technical and holistic analysis and new. use internet resources for this. focus on where the trend will go in next 3-4 days. use also support and resistence. so compare current position vs what would be expected to get in next 3-4 days: EURUSD, GBPUSD, USDJPY, USDCHF, USDCAD, AUDUSD, NZDUSD, EURGBP, EURCHF, EURJPY, EURAUD, EURCAD, EURNZD, GBPCHF, GBPJPY, GBPAUD, GBPCAD, GBPNZD, CHFJPY, AUDJPY, AUDNZD, AUDCAD, AUDCHF, CADJPY, CADCHF, NZDJPY, NZDCHF, NZDCAD. First, provide a JSON object with trading signals. Then provide a detailed market analysis explaining your signals. For signals, use: "Buy", "Sell", or "Neutral" based on technical analysis. Format: Start with JSON like {"EURUSD":"Buy",...} then add detailed market analysis below.'
           }
         ],
         max_tokens: 1500,
@@ -484,7 +384,7 @@ app.get('/api/analyze', async (req, res) => {
           const pair = match[1].toUpperCase();
           const signal = match[2].charAt(0).toUpperCase() + match[2].slice(1).toLowerCase();
           signals[pair] = signal;
-          console.log(\`Extracted: \${pair} = \${signal}\`);
+          console.log(`Extracted: ${pair} = ${signal}`);
         }
       });
       

@@ -388,7 +388,7 @@ app.get('/', (req, res) => {
     }
     
     window.addEventListener('load', fetchSignals);
-    setInterval(fetchSignals, 300000);
+    setInterval(fetchSignals, 8640000000);
   </script>
 </body>
 </html>`);

@@ -417,7 +417,7 @@ app.get('/api/analyze', async (req, res) => {
             content: 'Analyze what is expected for these 29 forex pairs for the next 3-4 days of trading. Use technical and holistic analysis and news. Use internet resources for this. Focus on what is the trend expected for next 3-4 days. Use support and resistance also. Compare current position vs what would be expected to get in next 3-4 days: EURUSD, GBPUSD, USDJPY, USDCHF, USDCAD, AUDUSD, NZDUSD, EURGBP, EURCHF, EURJPY, EURAUD, EURCAD, EURNZD, GBPCHF, GBPJPY, GBPAUD, GBPCAD, GBPNZD, CHFJPY, AUDJPY, AUDNZD, AUDCAD, AUDCHF, CADJPY, CADCHF, NZDJPY, NZDCHF, NZDCAD. First, provide a JSON object with trading signals and only say buy/sell/neutral. Do not provide a detailed market analysis explaining your signals. I only need the sell/buy/neutral For signals, use: "Buy", "Sell", or "Neutral". Format: Start with JSON like {"EURUSD":"Buy",...} '
           }
         ],
-        max_tokens: 1500,
+        max_tokens: 1000,
         temperature: 0.3
       })
     });
